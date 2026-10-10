@@ -20,7 +20,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 16px;
-            overflow: hidden; /* 스크롤 거의 없도록 고정 */
+            overflow: hidden;
         }
         .app-container {
             background: #ffffff;
@@ -38,7 +38,6 @@
             overflow: hidden;
         }
         
-        /* 상단 헤더 */
         .header {
             display: flex;
             align-items: center;
@@ -59,7 +58,6 @@
             color: #333d4b;
         }
 
-        /* 문제 카드 영역 */
         .card-body {
             flex-grow: 1;
             display: flex;
@@ -74,10 +72,9 @@
             margin-bottom: 16px;
         }
         
-        /* 문제 사진 (있을 때만 표시) */
         .question-img-box {
             width: 100%;
-            height: 160px;
+            height: 150px;
             border-radius: 12px;
             overflow: hidden;
             margin-bottom: 16px;
@@ -90,7 +87,6 @@
             object-fit: cover;
         }
 
-        /* 보기 버튼 리스트 */
         .options-list {
             display: flex;
             flex-direction: column;
@@ -100,8 +96,8 @@
             background: #f9fafb;
             border: 1px solid #e5e8eb;
             border-radius: 14px;
-            padding: 14px 16px;
-            font-size: 0.95rem;
+            padding: 13px 16px;
+            font-size: 0.92rem;
             font-weight: 500;
             text-align: left;
             color: #333d4b;
@@ -113,7 +109,6 @@
             transform: scale(0.98);
         }
 
-        /* 토스 스타일 바텀시트 */
         .bottom-sheet {
             position: absolute;
             bottom: 0;
@@ -132,7 +127,6 @@
             transform: translateY(0);
         }
         
-        /* 애니메이션 효과 */
         @keyframes bounceIn {
             0% { transform: scale(0.8); opacity: 0; }
             70% { transform: scale(1.05); }
@@ -186,7 +180,6 @@
             background: #1b64da;
         }
 
-        /* 배경 어둡게 하는 오버레이 */
         .overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -205,7 +198,6 @@
 <body>
 
     <div class="app-container">
-        <!-- 상단 헤더 -->
         <div>
             <div class="header">
                 <span class="header-badge">시흥스탬프</span>
@@ -213,109 +205,106 @@
             </div>
         </div>
 
-        <!-- 본문 (문제 영역) -->
         <div class="card-body">
             <div id="question-img-box" class="question-img-box">
                 <img id="question-img" src="" alt="역사 사진">
             </div>
             <div id="question-text" class="question-text">문제를 불러오는 중...</div>
-            <div class="options-list" id="options-list">
-                <!-- 보기가 동적으로 들어갑니다 -->
-            </div>
+            <div class="options-list" id="options-list"></div>
         </div>
 
-        <!-- 배경 어둠막 -->
-        <div id="overlay" class="overlay" onclick="loadRandomQuiz()"></div>
+        <div id="overlay" class="overlay" onclick="loadNextQuiz()"></div>
 
-        <!-- 바텀시트 (토스 스타일 결과 창) -->
         <div id="bottom-sheet" class="bottom-sheet">
             <div id="sheet-icon"></div>
             <div id="sheet-title" class="sheet-title"></div>
             <div id="sheet-desc" class="sheet-desc"></div>
-            <button class="next-btn" onclick="loadRandomQuiz()">다른 문제 풀기 🔄</button>
+            <button class="next-btn" onclick="loadNextQuiz()">다른 문제 풀기 🔄</button>
         </div>
     </div>
 
     <script>
-        // 시흥시 역사 퀴즈 데이터베이스 (사진이 필요한 곳은 img에 주소 추가 가능)
+        // 지명 2개 + 설화 2개 총 4개 문제
         const quizList = [
+            // [지명 1]
             {
-                q: "오이도의 원래 한자 표기인 '烏耳島'의 숨겨진 진실은 무엇일까요?",
-                img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80", // 예시 풍경 사진
-                options: [
-                    "1. 조선시대부터 까마귀가 많았다.",
-                    "2. '옷귀' 등 우리말 지명을 한자로 음차한 것이다.",
-                    "3. 일본인들이 관광지로 개발하며 지었다.",
-                    "4. 섬의 생김새가 까마귀를 닮았다."
-                ],
-                answer: 1,
-                explanation: "까마귀 귀라는 표기는 후대에 끼워 맞춰진 것이며, 원래는 '오질애'·'옷귀' 등의 우리말 지명에서 유래했습니다."
-            },
-            {
-                q: "오이도의 옛 이름인 '옥귀도' 설화에서 임금에게 무엇을 바쳤을까요?",
-                img: "", // 사진 없는 문제 테스트
-                options: [
-                    "1. 옥으로 만든 그릇에 담긴 물",
-                    "2. 황금으로 만든 보물 상자",
-                    "3. 싱싱한 서해안 조개구이",
-                    "4. 궁중에서 가져온 최고급 차"
-                ],
-                answer: 0,
-                explanation: "조난당한 임금에게 어부가 옥그릇에 물을 떠다 바쳐 귀하게 여겼다는 설화에서 유래했습니다."
-            },
-            {
-                q: "시흥시 정왕동의 모태가 된 '정왕산' 봉화대의 유래와 가장 가까운 것은?",
+                id: 1,
+                q: "[지명 유래] 오이도의 원래 한자 표기인 '烏耳島(오이도)'에 얽힌 역사적 진실은?",
                 img: "",
                 options: [
-                    "1. 정씨 성을 가진 왕이 살던 곳",
-                    "2. 왕이 정사를 돌보며 휴식하던 곳",
-                    "3. 올바른 공직자들이 왕래하던 길목",
-                    "4. 붉은 정기가 서려 있는 명산"
+                    "1. 진짜로 까마귀가 많아 붙여진 이름이다.",
+                    "2. '옷귀' 등 고유어 지명을 한자로 음차한 것이다.",
+                    "3. 일제강점기에 일본인이 만든 이름이다.",
+                    "4. 섬의 생김새가 까마귀 귀 모양과 똑같다."
                 ],
-                answer: 2,
-                explanation: "공직자들이 봉화대로 가기 위해 이 산을 왕래할 때 '올바른 공직자들이 왕래한다'는 뜻에서 유래했습니다."
+                answer: 1,
+                explanation: "'까마귀 귀'는 후대에 한자로 끼워 맞춘 것이며, 원래는 '오질애'·'옷귀' 등 고유어를 한자로 옮기는 과정에서 정착된 이름입니다."
             },
+            // [지명 2]
             {
-                q: "시흥 죽율동 '생금집' 전설에서 옥구도 우물가에서 발견한 신비한 동물은?",
+                id: 2,
+                q: "[지명 유래] 시흥시 정왕동의 모태가 된 '정왕산(正往山)' 지명의 뜻은?",
+                img: "",
+                options: [
+                    "1. 정이 많고 왕성한 기운이 서린 산",
+                    "2. 올바른(正) 공직자들이 왕래(往)하던 산",
+                    "3. 정씨와 왕씨 성을 가진 사람들이 개척한 산",
+                    "4. 왕이 정사를 돌보며 휴식하던 산"
+                ],
+                answer: 1,
+                explanation: "조정에서 파견된 공직자들이 군사 시설인 봉화대로 가기 위해 이 산을 왕래할 때 '올바른 관리들이 다니는 곳'이라는 뜻에서 붙여졌습니다."
+            },
+            // [설화 1]
+            {
+                id: 3,
+                q: "[동네 설화] 오이도의 옛 이름인 '옥귀도' 설화에서 어부가 조난당한 임금에게 바친 것은?",
+                img: "",
+                options: [
+                    "1. 옥(玉)으로 만든 그릇에 담긴 시원한 물",
+                    "2. 서해안에서 바로 잡은 신선한 횟감",
+                    "3. 섬에서 자라난 신비한 황금 열매",
+                    "4. 임금의 목숨을 구한 튼튼한 뗏목"
+                ],
+                answer: 0,
+                explanation: "배가 표류하여 목이 마르던 임금에게 어부가 귀한 옥그릇에 물을 떠다 바치자 감격하여 '옥귀도(玉貴島)'라 부르기 시작했다고 합니다."
+            },
+            // [설화 2]
+            {
+                id: 4,
+                q: "[동네 설화] 시흥 죽율동 '생금집' 전설에서 주인공 김창관이 옥구도 우물가에서 발견한 동물은?",
                 img: "",
                 options: [
                     "1. 깃털 하나가 금으로 변하는 샛노란 닭",
-                    "2. 황금빛 털을 가진 신비한 여우",
-                    "3. 말을 하는 영리한 하얀 학",
-                    "4. 부를 가져다주는 황금 거북이"
+                    "2. 보물을 찾아주는 영험한 흰 학",
+                    "3. 황금알을 낳는 신비한 서해안 거북이",
+                    "4. 소원을 들어주는 황금빛 여우"
                 ],
                 answer: 0,
-                explanation: "옥구도에서 발견한 신비한 황금닭이 낳아준 황금 덕분에 부자가 되었다는 향토 유적 설화입니다."
-            },
-            {
-                q: "임진왜란 당시 조남리 고개에서 여인의 기지로 왜군을 물리친 전투의 이름은?",
-                img: "",
-                options: [
-                    "1. 피흘리고개 전투",
-                    "2. 여우고개 대첩",
-                    "3. 자귀고개 승전",
-                    "4. 호랑이골 방어전"
-                ],
-                answer: 0,
-                explanation: "아들 이름인 '다자귀'를 암호로 삼아 왜군을 방심하게 만들고 기습하여 흘린 피가 내를 이루어 '피흘리고개'가 되었습니다."
+                explanation: "샛노란 닭의 깃털이 금으로 변해 큰 부자가 되었고 기와집을 지었는데, 이 집이 바로 시흥시 향토유적 제7호 '생금집'입니다."
             }
         ];
 
+        let lastQuizId = null; // 직전에 출제된 문제 ID 기록
         let currentQuiz = null;
 
-        function loadRandomQuiz() {
-            // 바텀시트 및 오버레이 숨기기
+        function loadNextQuiz() {
+            // 바텀시트 및 오버레이 닫기
             document.getElementById('bottom-sheet').classList.remove('show');
             document.getElementById('overlay').classList.remove('show');
 
-            // 랜덤 문제 추출
-            const randomIndex = Math.floor(Math.random() * quizList.length);
-            currentQuiz = quizList[randomIndex];
+            // 직전 문제를 제외한 나머지 문제 후보들 추출
+            const availableQuizzes = quizList.filter(quiz => quiz.id !== lastQuizId);
 
-            // 문제 세팅
+            // 남아있는 후보 중에서 무작위 선택
+            const randomIndex = Math.floor(Math.random() * availableQuizzes.length);
+            currentQuiz = availableQuizzes[randomIndex];
+
+            // 현재 문제 ID를 직전 문제 기록으로 업데이트
+            lastQuizId = currentQuiz.id;
+
+            // 화면에 문제 바인딩
             document.getElementById('question-text').innerText = currentQuiz.q;
 
-            // 사진 처리 (있으면 보여주고, 없으면 숨기기)
             const imgBox = document.getElementById('question-img-box');
             const imgEl = document.getElementById('question-img');
             if (currentQuiz.img && currentQuiz.img.trim() !== "") {
@@ -325,7 +314,6 @@
                 imgBox.style.display = "none";
             }
 
-            // 보기 버튼 생성
             const optionsList = document.getElementById('options-list');
             optionsList.innerHTML = '';
 
@@ -345,7 +333,6 @@
             const sheetTitle = document.getElementById('sheet-title');
             const sheetDesc = document.getElementById('sheet-desc');
 
-            // 결과 판정
             if (selectedIndex === currentQuiz.answer) {
                 sheetIcon.className = 'icon-correct';
                 sheetIcon.innerHTML = '⭕';
@@ -358,16 +345,15 @@
                 sheetTitle.innerText = '아쉽네요, 틀렸습니다!';
             }
 
-            // 설명 삽입
             sheetDesc.innerText = currentQuiz.explanation;
 
-            // 바텀시트 & 오버레이 슬라이드 업
             overlay.classList.add('show');
             sheet.classList.add('show');
         }
 
-        // 페이지 진입 시 바로 실행
-        window.onload = loadRandomQuiz;
+        window.onload = function() {
+            loadNextQuiz();
+        };
     </script>
 </body>
 </html>
