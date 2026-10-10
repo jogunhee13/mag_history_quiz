@@ -41,8 +41,13 @@
         .header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
             margin-bottom: 16px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .header-badge {
             background: #e8f3ff;
@@ -57,6 +62,14 @@
             font-weight: 700;
             color: #333d4b;
         }
+        .step-indicator {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #3182f6;
+            background: #f2f4f6;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
 
         .card-body {
             flex-grow: 1;
@@ -64,27 +77,18 @@
             flex-direction: column;
             justify-content: flex-start;
         }
+        .question-category {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #8b95a1;
+            margin-bottom: 6px;
+        }
         .question-text {
             font-size: 1.15rem;
             font-weight: 700;
             color: #191f28;
             line-height: 1.5;
             margin-bottom: 16px;
-        }
-        
-        .question-img-box {
-            width: 100%;
-            height: 150px;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 16px;
-            background: #e5e8eb;
-            display: none;
-        }
-        .question-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
 
         .options-list {
@@ -96,8 +100,8 @@
             background: #f9fafb;
             border: 1px solid #e5e8eb;
             border-radius: 14px;
-            padding: 13px 16px;
-            font-size: 0.92rem;
+            padding: 14px 16px;
+            font-size: 0.95rem;
             font-weight: 500;
             text-align: left;
             color: #333d4b;
@@ -109,6 +113,43 @@
             transform: scale(0.98);
         }
 
+        /* 최종 결과 화면 전용 스타일 */
+        .final-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .final-badge {
+            font-size: 3.8rem;
+            margin-bottom: 16px;
+        }
+        .final-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #191f28;
+            margin-bottom: 8px;
+        }
+        .final-score {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #3182f6;
+            margin-bottom: 20px;
+        }
+        .final-desc {
+            font-size: 0.95rem;
+            color: #4e5968;
+            line-height: 1.5;
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 18px;
+            width: 100%;
+        }
+
+        /* 토스 스타일 바텀시트 */
         .bottom-sheet {
             position: absolute;
             bottom: 0;
@@ -198,67 +239,46 @@
 <body>
 
     <div class="app-container">
-        <div>
-            <div class="header">
+        <!-- 상단 헤더 -->
+        <div class="header" id="app-header">
+            <div class="header-left">
                 <span class="header-badge">시흥스탬프</span>
                 <span class="header-title">우리 동네 역사 퀴즈</span>
             </div>
+            <span class="step-indicator" id="step-indicator">1 / 2</span>
         </div>
 
-        <div class="card-body">
-            <div id="question-img-box" class="question-img-box">
-                <img id="question-img" src="" alt="역사 사진">
-            </div>
+        <!-- 문제 진행 화면 -->
+        <div class="card-body" id="quiz-screen">
+            <div id="question-category" class="question-category">📖 설화 문제</div>
             <div id="question-text" class="question-text">문제를 불러오는 중...</div>
             <div class="options-list" id="options-list"></div>
         </div>
 
-        <div id="overlay" class="overlay" onclick="loadNextQuiz()"></div>
+        <!-- 최종 결과 화면 (버튼 없는 깔끔한 토스 카드 스타일) -->
+        <div class="final-screen" id="final-screen">
+            <div class="final-badge" id="final-badge">🏆</div>
+            <div class="final-title" id="final-title">퀴즈 완료!</div>
+            <div class="final-score" id="final-score">총 2문제 중 2개 정답</div>
+            <div class="final-desc" id="final-desc">시흥의 역사와 설화를 잘 알고 계시네요! 멋집니다 👍</div>
+        </div>
+
+        <!-- 오버레이 및 바텀시트 -->
+        <div id="overlay" class="overlay"></div>
 
         <div id="bottom-sheet" class="bottom-sheet">
             <div id="sheet-icon"></div>
             <div id="sheet-title" class="sheet-title"></div>
             <div id="sheet-desc" class="sheet-desc"></div>
-            <button class="next-btn" onclick="loadNextQuiz()">다른 문제 풀기 🔄</button>
+            <button class="next-btn" id="sheet-next-btn" onclick="handleNextStep()">다음 문제 ➔</button>
         </div>
     </div>
 
     <script>
-        // 지명 2개 + 설화 2개 총 4개 문제
-        const quizList = [
-            // [지명 1]
+        const folkloreQuizzes = [
             {
-                id: 1,
-                q: "[지명 유래] 오이도의 원래 한자 표기인 '烏耳島(오이도)'에 얽힌 역사적 진실은?",
-                img: "",
-                options: [
-                    "1. 진짜로 까마귀가 많아 붙여진 이름이다.",
-                    "2. '옷귀' 등 고유어 지명을 한자로 음차한 것이다.",
-                    "3. 일제강점기에 일본인이 만든 이름이다.",
-                    "4. 섬의 생김새가 까마귀 귀 모양과 똑같다."
-                ],
-                answer: 1,
-                explanation: "'까마귀 귀'는 후대에 한자로 끼워 맞춘 것이며, 원래는 '오질애'·'옷귀' 등 고유어를 한자로 옮기는 과정에서 정착된 이름입니다."
-            },
-            // [지명 2]
-            {
-                id: 2,
-                q: "[지명 유래] 시흥시 정왕동의 모태가 된 '정왕산(正往山)' 지명의 뜻은?",
-                img: "",
-                options: [
-                    "1. 정이 많고 왕성한 기운이 서린 산",
-                    "2. 올바른(正) 공직자들이 왕래(往)하던 산",
-                    "3. 정씨와 왕씨 성을 가진 사람들이 개척한 산",
-                    "4. 왕이 정사를 돌보며 휴식하던 산"
-                ],
-                answer: 1,
-                explanation: "조정에서 파견된 공직자들이 군사 시설인 봉화대로 가기 위해 이 산을 왕래할 때 '올바른 관리들이 다니는 곳'이라는 뜻에서 붙여졌습니다."
-            },
-            // [설화 1]
-            {
-                id: 3,
-                q: "[동네 설화] 오이도의 옛 이름인 '옥귀도' 설화에서 어부가 조난당한 임금에게 바친 것은?",
-                img: "",
+                category: "📖 동네 설화 문제",
+                q: "오이도의 옛 이름인 '옥귀도' 설화에서 어부가 조난당한 임금에게 바친 것은?",
                 options: [
                     "1. 옥(玉)으로 만든 그릇에 담긴 시원한 물",
                     "2. 서해안에서 바로 잡은 신선한 횟감",
@@ -268,11 +288,9 @@
                 answer: 0,
                 explanation: "배가 표류하여 목이 마르던 임금에게 어부가 귀한 옥그릇에 물을 떠다 바치자 감격하여 '옥귀도(玉貴島)'라 부르기 시작했다고 합니다."
             },
-            // [설화 2]
             {
-                id: 4,
-                q: "[동네 설화] 시흥 죽율동 '생금집' 전설에서 주인공 김창관이 옥구도 우물가에서 발견한 동물은?",
-                img: "",
+                category: "📖 동네 설화 문제",
+                q: "시흥 죽율동 '생금집' 전설에서 주인공 김창관이 옥구도 우물가에서 발견한 신비한 동물은?",
                 options: [
                     "1. 깃털 하나가 금으로 변하는 샛노란 닭",
                     "2. 보물을 찾아주는 영험한 흰 학",
@@ -284,40 +302,66 @@
             }
         ];
 
-        let lastQuizId = null; // 직전에 출제된 문제 ID 기록
-        let currentQuiz = null;
+        const placeQuizzes = [
+            {
+                category: "📍 지명 유래 문제",
+                q: "오이도의 원래 한자 표기인 '烏耳島(오이도)'에 얽힌 역사적 진실은?",
+                options: [
+                    "1. 진짜로 까마귀가 많아 붙여진 이름이다.",
+                    "2. '옷귀' 등 고유어 지명을 한자로 음차한 것이다.",
+                    "3. 일제강점기에 일본인이 만든 이름이다.",
+                    "4. 섬의 생김새가 까마귀 귀 모양과 똑같다."
+                ],
+                answer: 1,
+                explanation: "'까마귀 귀'는 후대에 한자로 끼워 맞춘 것이며, 원래는 '오질애'·'옷귀' 등 고유어를 한자로 옮기는 과정에서 정착된 이름입니다."
+            },
+            {
+                category: "📍 지명 유래 문제",
+                q: "시흥시 정왕동의 모태가 된 '정왕산(正往山)' 지명의 뜻은?",
+                options: [
+                    "1. 정이 많고 왕성한 기운이 서린 산",
+                    "2. 올바른(正) 공직자들이 왕래(往)하던 산",
+                    "3. 정씨와 왕씨 성을 가진 사람들이 개척한 산",
+                    "4. 왕이 정사를 돌보며 휴식하던 산"
+                ],
+                answer: 1,
+                explanation: "조정에서 파견된 공직자들이 군사 시설인 봉화대로 가기 위해 이 산을 왕래할 때 '올바른 관리들이 다니는 곳'이라는 뜻에서 붙여졌습니다."
+            }
+        ];
 
-        function loadNextQuiz() {
-            // 바텀시트 및 오버레이 닫기
+        let currentStage = 0;
+        let score = 0;
+        let selectedQuizList = [];
+
+        function startQuizGame() {
+            currentStage = 0;
+            score = 0;
+
+            const randomFolklore = folkloreQuizzes[Math.floor(Math.random() * folkloreQuizzes.length)];
+            const randomPlace = placeQuizzes[Math.floor(Math.random() * placeQuizzes.length)];
+            selectedQuizList = [randomFolklore, randomPlace];
+
+            document.getElementById('final-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'flex';
+            document.getElementById('app-header').style.display = 'flex';
+
+            renderCurrentQuiz();
+        }
+
+        function renderCurrentQuiz() {
             document.getElementById('bottom-sheet').classList.remove('show');
             document.getElementById('overlay').classList.remove('show');
 
-            // 직전 문제를 제외한 나머지 문제 후보들 추출
-            const availableQuizzes = quizList.filter(quiz => quiz.id !== lastQuizId);
+            const quiz = selectedQuizList[currentStage];
 
-            // 남아있는 후보 중에서 무작위 선택
-            const randomIndex = Math.floor(Math.random() * availableQuizzes.length);
-            currentQuiz = availableQuizzes[randomIndex];
-
-            // 현재 문제 ID를 직전 문제 기록으로 업데이트
-            lastQuizId = currentQuiz.id;
-
-            // 화면에 문제 바인딩
-            document.getElementById('question-text').innerText = currentQuiz.q;
-
-            const imgBox = document.getElementById('question-img-box');
-            const imgEl = document.getElementById('question-img');
-            if (currentQuiz.img && currentQuiz.img.trim() !== "") {
-                imgEl.src = currentQuiz.img;
-                imgBox.style.display = "block";
-            } else {
-                imgBox.style.display = "none";
-            }
+            document.getElementById('step-indicator').innerText = (currentStage + 1) + " / 2";
+            document.getElementById('question-category').innerText = quiz.category;
+            document.getElementById('question-text').innerText = quiz.q;
 
             const optionsList = document.getElementById('options-list');
             optionsList.innerHTML = '';
 
-            currentQuiz.options.forEach((opt, index) => {
+            quiz.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = opt;
@@ -327,13 +371,16 @@
         }
 
         function checkAnswer(selectedIndex) {
+            const quiz = selectedQuizList[currentStage];
             const sheet = document.getElementById('bottom-sheet');
             const overlay = document.getElementById('overlay');
             const sheetIcon = document.getElementById('sheet-icon');
             const sheetTitle = document.getElementById('sheet-title');
             const sheetDesc = document.getElementById('sheet-desc');
+            const sheetNextBtn = document.getElementById('sheet-next-btn');
 
-            if (selectedIndex === currentQuiz.answer) {
+            if (selectedIndex === quiz.answer) {
+                score++;
                 sheetIcon.className = 'icon-correct';
                 sheetIcon.innerHTML = '⭕';
                 sheetTitle.className = 'sheet-title correct-color';
@@ -345,14 +392,61 @@
                 sheetTitle.innerText = '아쉽네요, 틀렸습니다!';
             }
 
-            sheetDesc.innerText = currentQuiz.explanation;
+            sheetDesc.innerText = quiz.explanation;
+
+            if (currentStage === 0) {
+                sheetNextBtn.innerText = "다음 문제 (2/2) ➔";
+            } else {
+                sheetNextBtn.innerText = "최종 결과 보기 🏆";
+            }
 
             overlay.classList.add('show');
             sheet.classList.add('show');
         }
 
+        function handleNextStep() {
+            currentStage++;
+            if (currentStage < selectedQuizList.length) {
+                renderCurrentQuiz();
+            } else {
+                showFinalResult();
+            }
+        }
+
+        function showFinalResult() {
+            document.getElementById('bottom-sheet').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('app-header').style.display = 'none';
+
+            const finalScreen = document.getElementById('final-screen');
+            finalScreen.style.display = 'flex';
+
+            const badge = document.getElementById('final-badge');
+            const title = document.getElementById('final-title');
+            const scoreEl = document.getElementById('final-score');
+            const desc = document.getElementById('final-desc');
+
+            scoreEl.innerText = `총 2문제 중 ${score}개 정답!`;
+
+            if (score === 2) {
+                badge.innerText = '🎉';
+                title.innerText = '완벽해요! 역사 박사시네요!';
+                desc.innerText = '시흥의 설화와 지명 유래를 완벽하게 맞추셨습니다. 대단해요! 👏';
+            } else if (score === 1) {
+                badge.innerText = '👍';
+                title.innerText = '아깝네요! 한 문제 정답!';
+                desc.innerText = '시흥의 역사에 대해 잘 알고 계시는군요! 조금만 더 공부하면 만점이에요 😊';
+            } else {
+                badge.innerText = '💡';
+                title.innerText = '새로운 역사 지식 습득!';
+                desc.innerText = '오늘 시흥의 재미있는 옛 이야기를 새로 알게 되었네요! 수고하셨습니다 👏';
+            }
+        }
+
         window.onload = function() {
-            loadNextQuiz();
+            startQuizGame();
         };
     </script>
 </body>
