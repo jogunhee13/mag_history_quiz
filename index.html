@@ -27,7 +27,7 @@
             width: 100%;
             max-width: 420px;
             height: 100%;
-            max-height: 680px;
+            max-height: 720px;
             padding: 24px 20px;
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
@@ -41,8 +41,13 @@
         .header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
             margin-bottom: 16px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .header-badge {
             background: #e8f3ff;
@@ -57,40 +62,43 @@
             font-weight: 700;
             color: #333d4b;
         }
+        .step-indicator {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #3182f6;
+            background: #f2f4f6;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
 
         .card-body {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
+            overflow-y: auto;
+            max-height: 500px;
+            padding-right: 2px;
+        }
+        .question-category {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #8b95a1;
+            margin-bottom: 6px;
         }
         .question-text {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #191f28;
             line-height: 1.5;
             margin-bottom: 16px;
-        }
-        
-        .question-img-box {
-            width: 100%;
-            height: 150px;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 16px;
-            background: #e5e8eb;
-            display: none;
-        }
-        .question-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
 
         .options-list {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            margin-bottom: 10px;
         }
         .option-btn {
             background: #f9fafb;
@@ -109,6 +117,43 @@
             transform: scale(0.98);
         }
 
+        /* 최종 결과 화면 전용 스타일 */
+        .final-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .final-badge {
+            font-size: 3.8rem;
+            margin-bottom: 16px;
+        }
+        .final-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #191f28;
+            margin-bottom: 8px;
+        }
+        .final-score {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #3182f6;
+            margin-bottom: 20px;
+        }
+        .final-desc {
+            font-size: 0.95rem;
+            color: #4e5968;
+            line-height: 1.5;
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 18px;
+            width: 100%;
+        }
+
+        /* 토스 스타일 바텀시트 */
         .bottom-sheet {
             position: absolute;
             bottom: 0;
@@ -198,197 +243,192 @@
 <body>
 
     <div class="app-container">
-        <div>
-            <div class="header">
+        <!-- 상단 헤더 -->
+        <div class="header" id="app-header">
+            <div class="header-left">
                 <span class="header-badge">시흥스탬프</span>
                 <span class="header-title">우리 동네 역사 퀴즈</span>
             </div>
+            <span class="step-indicator" id="step-indicator">1 / 2</span>
         </div>
 
-        <div class="card-body">
-            <div id="question-img-box" class="question-img-box">
-                <img id="question-img" src="" alt="역사 사진">
-            </div>
+        <!-- 문제 진행 화면 -->
+        <div class="card-body" id="quiz-screen">
+            <div id="question-category" class="question-category">📖 설화 문제</div>
             <div id="question-text" class="question-text">문제를 불러오는 중...</div>
             <div class="options-list" id="options-list"></div>
         </div>
 
-        <div id="overlay" class="overlay" onclick="loadNextQuiz()"></div>
+        <!-- 최종 결과 화면 -->
+        <div class="final-screen" id="final-screen">
+            <div class="final-badge" id="final-badge">🏆</div>
+            <div class="final-title" id="final-title">퀴즈 완료!</div>
+            <div class="final-score" id="final-score">총 2문제 중 2개 정답</div>
+            <div class="final-desc" id="final-desc">시흥의 역사를 완벽하게 알고 계시네요! 멋집니다 👍</div>
+        </div>
+
+        <!-- 오버레이 및 바텀시트 -->
+        <div id="overlay" class="overlay"></div>
 
         <div id="bottom-sheet" class="bottom-sheet">
             <div id="sheet-icon"></div>
             <div id="sheet-title" class="sheet-title"></div>
             <div id="sheet-desc" class="sheet-desc"></div>
-            <button class="next-btn" onclick="loadNextQuiz()">다른 문제 풀기 🔄</button>
+            <button class="next-btn" id="sheet-next-btn" onclick="handleNextStep()">다음 문제 ➔</button>
         </div>
     </div>
 
     <script>
-        const quizList = [
+        // 총 4가지 종류, 각 종류별로 2문제씩 총 8문제 구성
+        const allCategories = [
             {
-                q: "1. 오이도의 원래 한자 표기인 '烏耳島(오이도)'의 숨겨진 역사적 진실은?",
-                img: "",
-                options: [
-                    "1. 까마귀가 많아 붙은 이름이다.",
-                    "2. 고유어 지명 '옷귀' 등을 한자로 음차한 것이다.",
-                    "3. 일제강점기에 바뀐 이름이다.",
-                    "4. 섬 모양이 까마귀 귀를 닮았다."
-                ],
-                answer: 1,
-                explanation: "'까마귀 귀'는 후대에 한자로 끼워 맞춘 것이며, 원래는 '오질애'·'옷귀' 등 고유어를 한자로 옮기며 정착된 지명입니다."
+                name: "📖 동네 설화",
+                questions: [
+                    {
+                        q: "오이도의 옛 이름인 '옥귀도' 설화에서 어부가 조난당한 임금에게 바친 것은?",
+                        options: [
+                            "1. 옥(玉)으로 만든 그릇에 담긴 시원한 물",
+                            "2. 서해안에서 바로 잡은 신선한 횟감",
+                            "3. 섬에서 자라난 신비한 황금 열매",
+                            "4. 임금의 목숨을 구한 튼튼한 뗏목"
+                        ],
+                        answer: 0,
+                        explanation: "배가 표류하여 목이 마르던 임금에게 어부가 귀한 옥그릇에 물을 떠다 바치자 감격하여 '옥귀도(玉貴島)'라 부르기 시작했다고 합니다."
+                    },
+                    {
+                        q: "시흥 죽율동 '생금집' 전설에서 주인공 김창관이 옥구도 우물가에서 발견한 신비한 동물은?",
+                        options: [
+                            "1. 깃털 하나가 금으로 변하는 샛노란 닭",
+                            "2. 보물을 찾아주는 영험한 흰 학",
+                            "3. 황금알을 낳는 신비한 서해안 거북이",
+                            "4. 소원을 들어주는 황금빛 여우"
+                        ],
+                        answer: 0,
+                        explanation: "샛노란 닭의 깃털이 금으로 변해 큰 부자가 되었고 기와집을 지었는데, 이 집이 바로 시흥시 향토유적 제7호 '생금집'입니다."
+                    }
+                ]
             },
             {
-                q: "2. 오이도의 옛 이름인 '옥귀도' 설화에서 어부가 조난당한 임금에게 바친 것은?",
-                img: "",
-                options: [
-                    "1. 옥으로 만든 그릇에 담긴 물",
-                    "2. 신비한 황금 열매",
-                    "3. 싱싱한 서해안 조개",
-                    "4. 임금의 목숨을 구한 뗏목"
-                ],
-                answer: 0,
-                explanation: "어부가 귀한 옥그릇에 물을 바치자 임금이 감격하여 섬 이름을 '옥귀도(玉貴島)'라 부르기 시작했다는 전설이 있습니다."
+                name: "📍 지명 유래",
+                questions: [
+                    {
+                        q: "오이도의 원래 한자 표기인 '烏耳島(오이도)'에 얽힌 역사적 진실은?",
+                        options: [
+                            "1. 진짜로 까마귀가 많아 붙여진 이름이다.",
+                            "2. '옷귀' 등 고유어 지명을 한자로 음차한 것이다.",
+                            "3. 일제강점기에 일본인이 만든 이름이다.",
+                            "4. 섬의 생김새가 까마귀 귀 모양과 똑같다."
+                        ],
+                        answer: 1,
+                        explanation: "'까마귀 귀'는 후대에 한자로 끼워 맞춘 것이며, 원래는 '오질애'·'옷귀' 등 고유어를 한자로 옮기는 과정에서 정착된 이름입니다."
+                    },
+                    {
+                        q: "시흥시 정왕동의 모태가 된 '정왕산(正往山)' 지명의 뜻은?",
+                        options: [
+                            "1. 정이 많고 왕성한 기운이 서린 산",
+                            "2. 올바른(正) 공직자들이 왕래(往)하던 산",
+                            "3. 정씨와 왕씨 성을 가진 사람들이 개척한 산",
+                            "4. 왕이 정사를 돌보며 휴식하던 산"
+                        ],
+                        answer: 1,
+                        explanation: "조정에서 파견된 공직자들이 군사 시설인 봉화대로 가기 위해 이 산을 왕래할 때 '올바른 관리들이 다니는 곳'이라는 뜻에서 붙여졌습니다."
+                    }
+                ]
             },
             {
-                q: "3. 일제강점기 오이도 남쪽 '똥섬(덕섬)'을 잘라내려 할 때 일어난 기이한 현상은?",
-                img: "",
-                options: [
-                    "1. 자른 틈새에서 붉은 피가 흘러나왔다.",
-                    "2. 섬 전체가 바다 밑으로 침몰했다.",
-                    "3. 수많은 까마귀가 날아와 공사를 방해했다.",
-                    "4. 하루 만에 잘려 나간 땅이 다시 붙었다."
-                ],
-                answer: 0,
-                explanation: "두 섬의 연결을 끊으려고 잘라내자 틈새에서 피가 흘러나와 영험함에 두려워한 일본인들이 공사를 멈췄다는 전설입니다."
+                name: "👤 역사 인물",
+                questions: [
+                    {
+                        q: "청계천 판자촌 야학 활동을 시작으로 시흥 신천동에 '복음자리' 마을을 건설하는 등 철거민들의 정착을 도운 인물은?",
+                        options: [
+                            "1. 제정구",
+                            "2. 최긍렬",
+                            "3. 정약용",
+                            "4. 한용운"
+                        ],
+                        answer: 0,
+                        explanation: "제정구 선생님은 양평동, 시흥동, 목동 등 판자촌 철거민들의 집단 이주를 도와 '복음자리', '한독마을', '목화마을'을 건설하였습니다."
+                    },
+                    {
+                        q: "3.1 운동에 참여했다가 퇴학당한 후, 농촌 계몽과 교육을 위해 1921년 시흥군에 '군자학원'을 설립한 인물은?",
+                        options: [
+                            "1. 제정구",
+                            "2. 최긍렬",
+                            "3. 안창호",
+                            "4. 주시경"
+                        ],
+                        answer: 1,
+                        explanation: "최긍렬 선생은 암울한 상황을 극복하고자 교육에 뜻을 두고 군자학원을 세웠으며, 오늘날 군자중학교의 모태가 되는 군자고등공민학교를 세우기도 했습니다."
+                    }
+                ]
             },
             {
-                q: "4. 정왕동의 모태가 된 '정왕산(正往山)' 봉화대의 이름 유래는?",
-                img: "",
-                options: [
-                    "1. 왕이 정사를 돌보며 쉬어가던 곳",
-                    "2. 올바른(正) 공직자들이 왕래(往)하는 곳",
-                    "3. 정씨와 왕씨가 처음 마을을 일군 곳",
-                    "4. 정기가 바르고 왕성한 산"
-                ],
-                answer: 1,
-                explanation: "조정에서 파견된 공직자들이 봉화대로 가기 위해 이 산을 자주 왕래할 때 '올바른 자들이 왕래한다'는 뜻에서 붙여진 이름입니다."
-            },
-            {
-                q: "5. 죽율동 '생금집' 전설에서 주인공 김창관이 옥구도 우물가에서 가져온 동물은?",
-                img: "",
-                options: [
-                    "1. 깃털이 금으로 변하는 샛노란 닭",
-                    "2. 황금알을 낳는 신비한 거위",
-                    "3. 말을 듣는 황금 여우",
-                    "4. 보물을 찾아주는 하얀 개"
-                ],
-                answer: 0,
-                explanation: "샛노란 닭의 깃털이 금으로 변해 부자가 되어 지은 기와집이 '생금집'이며, 현재 시흥시 향토유적 제7호입니다."
-            },
-            {
-                q: "6. '생금집' 전설에서 소문을 듣고 황금닭을 훔쳐 달아난 딸에게 일어난 일은?",
-                img: "",
-                options: [
-                    "1. 닭이 돌멩이로 변해버렸다.",
-                    "2. 닭이 하늘로 날아가 버렸다.",
-                    "3. 닭이 황금을 더 이상 낳지 않았다.",
-                    "4. 닭이 까마귀로 변했다."
-                ],
-                answer: 0,
-                explanation: "탐욕을 부린 딸이 닭을 훔쳐가자 황금닭이 돌멩이로 변해버렸다는 권선징악의 교훈이 담겨 있습니다."
-            },
-            {
-                q: "7. 시흥 군자봉 정상에서 신라 경순왕을 성황신으로 모시며 매년 열리는 천년 역사의 축제는?",
-                img: "",
-                options: [
-                    "1. 군자봉성황제",
-                    "2. 오이도바다축제",
-                    "3. 정왕산봉화제",
-                    "4. 생금집문화제"
-                ],
-                answer: 0,
-                explanation: "군자봉 정상(향토유적 제14호)에서는 경순왕과 안씨 부인을 모시는 '군자봉성황제'가 매년 음력 10월 3일에 열립니다."
-            },
-            {
-                q: "8. 임진왜란 당시 조남리 고개에서 여인이 조선군 기습을 돕기 위해 외친 암호는?",
-                img: "",
-                options: [
-                    "1. 다자귀 (모두 잠들어라)",
-                    "2. 더자귀 (계속 지켜라)",
-                    "3. 까마귀 (적군이 왔다)",
-                    "4. 생금지 (돌격하라)"
-                ],
-                answer: 0,
-                explanation: "'다자귀'를 외쳐 왜군을 안심시킨 뒤 조선군이 기습하여 승리했고, 피가 내를 이루어 '피흘리고개'가 되었습니다."
-            },
-            {
-                q: "9. 조선 전기 영의정을 지낸 '하연'이 유언으로 시흥 신천동 묘소 주변에 심게 한 나무는?",
-                img: "",
-                options: [
-                    "1. 회나무",
-                    "2. 소나무",
-                    "3. 느티나무",
-                    "4. 은행나무"
-                ],
-                answer: 0,
-                explanation: "후손들이 회나무를 팔아버리자 하연의 혼이 나타나는 기이한 일이 일어났고, 나무를 다시 심어 위로했다는 설화가 전해집니다."
-            },
-            {
-                q: "10. 원래 배를 타고 들어가던 섬이었던 오이도가 육지와 연결된 결정적 계기는?",
-                img: "",
-                options: [
-                    "1. 1922년 일제강점기 염전 개발과 제방 공사",
-                    "2. 조선시대 세종대왕의 다리 건설",
-                    "3. 시화공단 조성 사업",
-                    "4. 지하철 4호선 오이도역 개통"
-                ],
-                answer: 0,
-                explanation: "오이도는 원래 섬이었으나 1922년 일제강점기 염전 개발 및 제방 공사로 인해 육지화되었습니다."
+                name: "🏛️ 문화유산",
+                questions: [
+                    {
+                        q: "시흥시 진덕사에 소장되어 있으며, 물과 땅에서 죽은 고혼들을 달래기 위한 '수륙재'의 의식을 모은 불교 의례서는?",
+                        options: [
+                            "1. 법계성범수륙승회수재의궤",
+                            "2. 조선왕조실록",
+                            "3. 명황계감",
+                            "4. 동국여지승람"
+                        ],
+                        answer: 0,
+                        explanation: "'법계성범수륙승회수재의궤'는 물과 땅의 고혼들을 달래는 수륙재의 기원과 절차 등을 모은 불교 의례서로 2017년에 지정되었습니다."
+                    },
+                    {
+                        q: "세종대왕의 8남이며 음률에 조예가 깊고 세종의 각별한 사랑을 받았던 왕자의 묘가 위치한 곳은?",
+                        options: [
+                            "1. 영응대군 (군자동)",
+                            "2. 양녕대군",
+                            "3. 효령대군",
+                            "4. 수양대군"
+                        ],
+                        answer: 0,
+                        explanation: "세종의 8남 영응대군의 묘 및 신도비가 군자동에 있으며, 세종과 세조가 끔찍이 아꼈던 왕자로 잘 알려져 있습니다."
+                    }
+                ]
             }
         ];
 
-        // 10문제를 중복 없이 섞어주는 스마트 셔플 로직
-        let shuffledIndexes = [];
-        let currentIndex = 0;
+        let currentStage = 0; // 0번 또는 1번 문제 (총 2문제)
+        let score = 0;
+        let activeCategoryName = "";
+        let selectedQuizList = []; // 선택된 1개 카테고리의 2문제
 
-        function initQuiz() {
-            // 0~9 번호를 무작위로 섞기 (피셔-예이츠 셔플)
-            shuffledIndexes = Array.from({length: quizList.length}, (_, i) => i);
-            for (let i = shuffledIndexes.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffledIndexes[i], shuffledIndexes[j]] = [shuffledIndexes[j], shuffledIndexes[i]];
-            }
-            currentIndex = 0;
+        function startQuizGame() {
+            currentStage = 0;
+            score = 0;
+
+            // 4가지 종류 중 무작위로 딱 1종류를 선택
+            const randomCategory = allCategories[Math.floor(Math.random() * allCategories.length)];
+            activeCategoryName = randomCategory.name;
+            
+            // 선택된 종류의 2문제를 가져옴
+            selectedQuizList = randomCategory.questions;
+
+            // 화면 초기화
+            document.getElementById('final-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'flex';
+            document.getElementById('app-header').style.display = 'flex';
+
+            renderCurrentQuiz();
         }
 
-        function loadNextQuiz() {
+        function renderCurrentQuiz() {
             document.getElementById('bottom-sheet').classList.remove('show');
             document.getElementById('overlay').classList.remove('show');
 
-            // 10문제를 다 풀었으면 다시 섞어서 순환
-            if (currentIndex >= shuffledIndexes.length) {
-                initQuiz();
-            }
+            const quiz = selectedQuizList[currentStage];
 
-            const targetIndex = shuffledIndexes[currentIndex];
-            currentQuiz = quizList[targetIndex];
-            currentIndex++; // 다음 문제를 위해 인덱스 증가
-
-            document.getElementById('question-text').innerText = currentQuiz.q;
-
-            const imgBox = document.getElementById('question-img-box');
-            const imgEl = document.getElementById('question-img');
-            if (currentQuiz.img && currentQuiz.img.trim() !== "") {
-                imgEl.src = currentQuiz.img;
-                imgBox.style.display = "block";
-            } else {
-                imgBox.style.display = "none";
-            }
+            document.getElementById('step-indicator').innerText = (currentStage + 1) + " / 2";
+            document.getElementById('question-category').innerText = activeCategoryName + ` (${currentStage + 1}/2)`;
+            document.getElementById('question-text').innerText = quiz.q;
 
             const optionsList = document.getElementById('options-list');
             optionsList.innerHTML = '';
 
-            currentQuiz.options.forEach((opt, index) => {
+            quiz.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = opt;
@@ -398,13 +438,16 @@
         }
 
         function checkAnswer(selectedIndex) {
+            const quiz = selectedQuizList[currentStage];
             const sheet = document.getElementById('bottom-sheet');
             const overlay = document.getElementById('overlay');
             const sheetIcon = document.getElementById('sheet-icon');
             const sheetTitle = document.getElementById('sheet-title');
             const sheetDesc = document.getElementById('sheet-desc');
+            const sheetNextBtn = document.getElementById('sheet-next-btn');
 
-            if (selectedIndex === currentQuiz.answer) {
+            if (selectedIndex === quiz.answer) {
+                score++;
                 sheetIcon.className = 'icon-correct';
                 sheetIcon.innerHTML = '⭕';
                 sheetTitle.className = 'sheet-title correct-color';
@@ -416,15 +459,61 @@
                 sheetTitle.innerText = '아쉽네요, 틀렸습니다!';
             }
 
-            sheetDesc.innerText = currentQuiz.explanation;
+            sheetDesc.innerText = quiz.explanation;
+
+            if (currentStage === 0) {
+                sheetNextBtn.innerText = "다음 문제 (2/2) ➔";
+            } else {
+                sheetNextBtn.innerText = "최종 결과 보기 🏆";
+            }
 
             overlay.classList.add('show');
             sheet.classList.add('show');
         }
 
+        function handleNextStep() {
+            currentStage++;
+            if (currentStage < selectedQuizList.length) {
+                renderCurrentQuiz();
+            } else {
+                showFinalResult();
+            }
+        }
+
+        function showFinalResult() {
+            document.getElementById('bottom-sheet').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('app-header').style.display = 'none';
+
+            const finalScreen = document.getElementById('final-screen');
+            finalScreen.style.display = 'flex';
+
+            const badge = document.getElementById('final-badge');
+            const title = document.getElementById('final-title');
+            const scoreEl = document.getElementById('final-score');
+            const desc = document.getElementById('final-desc');
+
+            scoreEl.innerText = `총 2문제 중 ${score}개 정답!`;
+
+            if (score === 2) {
+                badge.innerText = '🎉';
+                title.innerText = `완벽해요! [${activeCategoryName}] 마스터!`;
+                desc.innerText = `선택된 ${activeCategoryName} 부문 2문제를 모두 맞히셨습니다. 대단해요! 👏`;
+            } else if (score === 1) {
+                badge.innerText = '👍';
+                title.innerText = '훌륭해요! 1문제 정답!';
+                desc.innerText = `선택된 ${activeCategoryName} 부문에서 1문제를 맞히셨네요. 멋지게 알아가셨길 바랍니다 😊`;
+            } else {
+                badge.innerText = '💡';
+                title.innerText = '새로운 역사 지식 습득!';
+                desc.innerText = `오늘 ${activeCategoryName}에 대해 새로운 옛 이야기를 알게 되었네요! 수고하셨습니다 👏`;
+            }
+        }
+
         window.onload = function() {
-            initQuiz();
-            loadNextQuiz();
+            startQuizGame();
         };
     </script>
 </body>
