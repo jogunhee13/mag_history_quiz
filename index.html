@@ -27,7 +27,7 @@
             width: 100%;
             max-width: 420px;
             height: 100%;
-            max-height: 680px;
+            max-height: 720px;
             padding: 24px 20px;
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
@@ -76,6 +76,9 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
+            overflow-y: auto;
+            max-height: 500px;
+            padding-right: 2px;
         }
         .question-category {
             font-size: 0.85rem;
@@ -84,7 +87,7 @@
             margin-bottom: 6px;
         }
         .question-text {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #191f28;
             line-height: 1.5;
@@ -95,13 +98,14 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            margin-bottom: 10px;
         }
         .option-btn {
             background: #f9fafb;
             border: 1px solid #e5e8eb;
             border-radius: 14px;
-            padding: 14px 16px;
-            font-size: 0.95rem;
+            padding: 13px 16px;
+            font-size: 0.92rem;
             font-weight: 500;
             text-align: left;
             color: #333d4b;
@@ -245,7 +249,7 @@
                 <span class="header-badge">시흥스탬프</span>
                 <span class="header-title">우리 동네 역사 퀴즈</span>
             </div>
-            <span class="step-indicator" id="step-indicator">1 / 2</span>
+            <span class="step-indicator" id="step-indicator">1 / 4</span>
         </div>
 
         <!-- 문제 진행 화면 -->
@@ -255,12 +259,12 @@
             <div class="options-list" id="options-list"></div>
         </div>
 
-        <!-- 최종 결과 화면 (버튼 없는 깔끔한 토스 카드 스타일) -->
+        <!-- 최종 결과 화면 -->
         <div class="final-screen" id="final-screen">
             <div class="final-badge" id="final-badge">🏆</div>
             <div class="final-title" id="final-title">퀴즈 완료!</div>
-            <div class="final-score" id="final-score">총 2문제 중 2개 정답</div>
-            <div class="final-desc" id="final-desc">시흥의 역사와 설화를 잘 알고 계시네요! 멋집니다 👍</div>
+            <div class="final-score" id="final-score">총 4문제 중 4개 정답</div>
+            <div class="final-desc" id="final-desc">시흥의 역사와 인물을 완벽하게 알고 계시네요! 멋집니다 👍</div>
         </div>
 
         <!-- 오버레이 및 바텀시트 -->
@@ -275,9 +279,10 @@
     </div>
 
     <script>
+        // 1. 설화 문제 (2개)
         const folkloreQuizzes = [
             {
-                category: "📖 동네 설화 문제",
+                category: "📖 동네 설화 문제 (1/4)",
                 q: "오이도의 옛 이름인 '옥귀도' 설화에서 어부가 조난당한 임금에게 바친 것은?",
                 options: [
                     "1. 옥(玉)으로 만든 그릇에 담긴 시원한 물",
@@ -289,7 +294,7 @@
                 explanation: "배가 표류하여 목이 마르던 임금에게 어부가 귀한 옥그릇에 물을 떠다 바치자 감격하여 '옥귀도(玉貴島)'라 부르기 시작했다고 합니다."
             },
             {
-                category: "📖 동네 설화 문제",
+                category: "📖 동네 설화 문제 (1/4)",
                 q: "시흥 죽율동 '생금집' 전설에서 주인공 김창관이 옥구도 우물가에서 발견한 신비한 동물은?",
                 options: [
                     "1. 깃털 하나가 금으로 변하는 샛노란 닭",
@@ -302,9 +307,10 @@
             }
         ];
 
+        // 2. 지명 문제 (2개)
         const placeQuizzes = [
             {
-                category: "📍 지명 유래 문제",
+                category: "📍 지명 유래 문제 (2/4)",
                 q: "오이도의 원래 한자 표기인 '烏耳島(오이도)'에 얽힌 역사적 진실은?",
                 options: [
                     "1. 진짜로 까마귀가 많아 붙여진 이름이다.",
@@ -316,7 +322,7 @@
                 explanation: "'까마귀 귀'는 후대에 한자로 끼워 맞춘 것이며, 원래는 '오질애'·'옷귀' 등 고유어를 한자로 옮기는 과정에서 정착된 이름입니다."
             },
             {
-                category: "📍 지명 유래 문제",
+                category: "📍 지명 유래 문제 (2/4)",
                 q: "시흥시 정왕동의 모태가 된 '정왕산(正往山)' 지명의 뜻은?",
                 options: [
                     "1. 정이 많고 왕성한 기운이 서린 산",
@@ -329,7 +335,63 @@
             }
         ];
 
-        let currentStage = 0;
+        // 3. 인물 문제 (2개)
+        const personQuizzes = [
+            {
+                category: "👤 역사 인물 문제 (3/4)",
+                q: "청계천 판자촌 야학 활동을 시작으로 시흥 신천동에 '복음자리' 마을을 건설하는 등 철거민들의 정착을 도운 인물은?",
+                options: [
+                    "1. 제정구",
+                    "2. 최긍렬",
+                    "3. 정약용",
+                    "4. 한용운"
+                ],
+                answer: 0,
+                explanation: "제정구 선생님은 양평동, 시흥동, 목동 등 판자촌 철거민들의 집단 이주를 도와 '복음자리', '한독마을', '목화마을'을 건설하였습니다."
+            },
+            {
+                category: "👤 역사 인물 문제 (3/4)",
+                q: "3.1 운동에 참여했다가 퇴학당한 후, 농촌 계몽과 교육을 위해 1921년 시흥군에 '군자학원'을 설립한 인물은?",
+                options: [
+                    "1. 제정구",
+                    "2. 최긍렬",
+                    "3. 안창호",
+                    "4. 주시경"
+                ],
+                answer: 1,
+                explanation: "최긍렬 선생은 암울한 상황을 극복하고자 교육에 뜻을 두고 군자학원을 세웠으며, 오늘날 군자중학교의 모태가 되는 군자고등공민학교를 세우기도 했습니다."
+            }
+        ];
+
+        // 4. 문화유산 문제 (2개)
+        const heritageQuizzes = [
+            {
+                category: "🏛️ 문화유산 문제 (4/4)",
+                q: "시흥시 진덕사에 소장되어 있으며, 물과 땅에서 죽은 고혼들을 달래기 위한 '수륙재'의 의식을 모은 불교 의례서는?",
+                options: [
+                    "1. 법계성범수륙승회수재의궤",
+                    "2. 조선왕조실록",
+                    "3. 명황계감",
+                    "4. 동국여지승람"
+                ],
+                answer: 0,
+                explanation: "'법계성범수륙승회수재의궤'는 물과 땅의 고혼들을 달래는 수륙재의 기원과 절차 등을 모은 불교 의례서로 2017년에 지정되었습니다."
+            },
+            {
+                category: "🏛️ 문화유산 문제 (4/4)",
+                q: "세종대왕의 8남이며 음률에 조예가 깊고 세종의 각별한 사랑을 받았던 왕자의 묘가 위치한 곳은?",
+                options: [
+                    "1. 영응대군 (군자동)",
+                    "2. 양녕대군",
+                    "3. 효령대군",
+                    "4. 수양대군"
+                ],
+                answer: 0,
+                explanation: "세종의 8남 영응대군의 묘 및 신도비가 군자동에 있으며, 세종과 세조가 끔찍이 아꼈던 왕자로 잘 알려져 있습니다."
+            }
+        ];
+
+        let currentStage = 0; // 0: 설화, 1: 지명, 2: 인물, 3: 문화유산
         let score = 0;
         let selectedQuizList = [];
 
@@ -337,9 +399,13 @@
             currentStage = 0;
             score = 0;
 
-            const randomFolklore = folkloreQuizzes[Math.floor(Math.random() * folkloreQuizzes.length)];
-            const randomPlace = placeQuizzes[Math.floor(Math.random() * placeQuizzes.length)];
-            selectedQuizList = [randomFolklore, randomPlace];
+            // 4개 종류별로 각각 1개씩 무작위 추출하여 총 4문제 구성
+            const r1 = folkloreQuizzes[Math.floor(Math.random() * folkloreQuizzes.length)];
+            const r2 = placeQuizzes[Math.floor(Math.random() * placeQuizzes.length)];
+            const r3 = personQuizzes[Math.floor(Math.random() * personQuizzes.length)];
+            const r4 = heritageQuizzes[Math.floor(Math.random() * heritageQuizzes.length)];
+            
+            selectedQuizList = [r1, r2, r3, r4];
 
             document.getElementById('final-screen').style.display = 'none';
             document.getElementById('quiz-screen').style.display = 'flex';
@@ -354,7 +420,7 @@
 
             const quiz = selectedQuizList[currentStage];
 
-            document.getElementById('step-indicator').innerText = (currentStage + 1) + " / 2";
+            document.getElementById('step-indicator').innerText = (currentStage + 1) + " / 4";
             document.getElementById('question-category').innerText = quiz.category;
             document.getElementById('question-text').innerText = quiz.q;
 
@@ -394,8 +460,8 @@
 
             sheetDesc.innerText = quiz.explanation;
 
-            if (currentStage === 0) {
-                sheetNextBtn.innerText = "다음 문제 (2/2) ➔";
+            if (currentStage < 3) {
+                sheetNextBtn.innerText = "다음 문제 (" + (currentStage + 2) + "/4) ➔";
             } else {
                 sheetNextBtn.innerText = "최종 결과 보기 🏆";
             }
@@ -428,20 +494,20 @@
             const scoreEl = document.getElementById('final-score');
             const desc = document.getElementById('final-desc');
 
-            scoreEl.innerText = `총 2문제 중 ${score}개 정답!`;
+            scoreEl.innerText = `총 4문제 중 ${score}개 정답!`;
 
-            if (score === 2) {
+            if (score === 4) {
                 badge.innerText = '🎉';
-                title.innerText = '완벽해요! 역사 박사시네요!';
-                desc.innerText = '시흥의 설화와 지명 유래를 완벽하게 맞추셨습니다. 대단해요! 👏';
-            } else if (score === 1) {
+                title.innerText = '완벽해요! 시흥 역사 박사님!';
+                desc.innerText = '설화, 지명, 인물, 문화유산까지 모두 맞히셨습니다. 대단해요! 👏';
+            } else if (score >= 2) {
                 badge.innerText = '👍';
-                title.innerText = '아깝네요! 한 문제 정답!';
-                desc.innerText = '시흥의 역사에 대해 잘 알고 계시는군요! 조금만 더 공부하면 만점이에요 😊';
+                title.innerText = '훌륭해요! 시흥을 잘 아시네요!';
+                desc.innerText = `총 4문제 중 ${score}개를 맞히셨군요! 시흥의 역사에 대해 멋지게 알아가셨길 바랍니다 😊`;
             } else {
                 badge.innerText = '💡';
                 title.innerText = '새로운 역사 지식 습득!';
-                desc.innerText = '오늘 시흥의 재미있는 옛 이야기를 새로 알게 되었네요! 수고하셨습니다 👏';
+                desc.innerText = '오늘 시흥의 인물과 문화유산에 대해 새로운 옛 이야기를 알게 되었네요! 수고하셨습니다 👏';
             }
         }
 
