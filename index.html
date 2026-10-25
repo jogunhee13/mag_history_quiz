@@ -3,175 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>시흥시 역사 퀵 챌린지</title>
+    <title>시흥시 역사 퀴즈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
             -webkit-tap-highlight-color: transparent;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f4f6f8;
             color: #191f28;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 16px;
-            overflow: hidden;
-        }
-        .app-container {
-            background: #ffffff;
-            width: 100%;
-            max-width: 420px;
-            height: 100%;
-            max-height: 720px;
-            padding: 24px 20px;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
         }
         
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .header-badge {
-            background: #e8f3ff;
-            color: #3182f6;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
-        .header-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: #333d4b;
-        }
-        .step-indicator {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #3182f6;
-            background: #f2f4f6;
-            padding: 4px 10px;
-            border-radius: 12px;
-        }
-
-        .card-body {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            overflow-y: auto;
-            max-height: 500px;
-            padding-right: 2px;
-        }
-        .question-category {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #8b95a1;
-            margin-bottom: 6px;
-        }
-        .question-text {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #191f28;
-            line-height: 1.5;
-            margin-bottom: 16px;
-        }
-
-        .options-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .option-btn {
-            background: #f9fafb;
-            border: 1px solid #e5e8eb;
-            border-radius: 14px;
-            padding: 13px 16px;
-            font-size: 0.92rem;
-            font-weight: 500;
-            text-align: left;
-            color: #333d4b;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .option-btn:active {
-            background: #e5e8eb;
-            transform: scale(0.98);
-        }
-
-        /* 최종 결과 화면 전용 스타일 */
-        .final-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-            padding: 20px 0;
-        }
-        .final-badge {
-            font-size: 3.8rem;
-            margin-bottom: 16px;
-        }
-        .final-title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #191f28;
-            margin-bottom: 8px;
-        }
-        .final-score {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #3182f6;
-            margin-bottom: 20px;
-        }
-        .final-desc {
-            font-size: 0.95rem;
-            color: #4e5968;
-            line-height: 1.5;
-            background: #f9fafb;
-            padding: 20px;
-            border-radius: 18px;
-            width: 100%;
-        }
-
-        /* 토스 스타일 바텀시트 */
-        .bottom-sheet {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #ffffff;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            padding: 24px 20px 32px 20px;
-            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.1, 1, 0.1, 1);
-            z-index: 10;
-        }
-        .bottom-sheet.show {
-            transform: translateY(0);
-        }
-        
+        /* 토스 스타일 애니메이션 */
         @keyframes bounceIn {
             0% { transform: scale(0.8); opacity: 0; }
             70% { transform: scale(1.05); }
@@ -182,57 +27,29 @@
             20%, 60% { transform: translateX(-6px); }
             40%, 80% { transform: translateX(6px); }
         }
+        
         .icon-correct {
-            font-size: 2.2rem;
-            margin-bottom: 8px;
             display: inline-block;
-            animation: bounceIn 0.4s ease;
+            animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .icon-wrong {
-            font-size: 2.2rem;
-            margin-bottom: 8px;
             display: inline-block;
             animation: shake 0.4s ease;
         }
 
-        .sheet-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 8px;
+        /* 바텀시트 슬라이드 애니메이션 */
+        .bottom-sheet {
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.1, 1, 0.1, 1);
         }
-        .sheet-title.correct-color { color: #2480f6; }
-        .sheet-title.wrong-color { color: #f04452; }
-
-        .sheet-desc {
-            font-size: 0.92rem;
-            color: #4e5968;
-            line-height: 1.5;
-            margin-bottom: 20px;
+        .bottom-sheet.show {
+            transform: translateY(0);
         }
-        .next-btn {
-            background: #3182f6;
-            color: #ffffff;
-            border: none;
-            border-radius: 14px;
-            width: 100%;
-            padding: 16px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .next-btn:active {
-            background: #1b64da;
-        }
-
+        
         .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 5;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         .overlay.show {
             opacity: 1;
@@ -240,47 +57,130 @@
         }
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen p-4 overflow-hidden select-none">
 
-    <div class="app-container">
-        <!-- 상단 헤더 -->
-        <div class="header" id="app-header">
-            <div class="header-left">
-                <span class="header-badge">시흥스탬프</span>
-                <span class="header-title">우리 동네 역사 퀴즈</span>
+    <!-- 메인 메인 컨테이너 -->
+    <div class="w-full max-w-[420px] h-[720px] max-h-[90vh] bg-white rounded-[28px] shadow-xl relative overflow-hidden flex flex-col justify-between p-6">
+        
+        <!-- 1. 카테고리 선택 화면 -->
+        <div id="category-screen" class="flex flex-col h-full justify-between py-2">
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-[#e8f3ff] text-[#3182f6] text-xs font-bold px-2.5 py-1 rounded-md">시흥스탬프</span>
+                    <span class="text-sm font-semibold text-gray-500">우리 동네 역사 퀴즈</span>
+                </div>
+                <h1 class="text-2xl font-extrabold text-gray-900 leading-snug mb-2">
+                    알고 싶은 역사를<br/>선택해 주세요
+                </h1>
+                <p class="text-sm text-gray-500 mb-6">원하는 주제를 눌러 2문제를 풀어보세요.</p>
+
+                <!-- 카테고리 목록 -->
+                <div class="grid grid-cols-1 gap-3.5">
+                    <button onclick="selectCategory(0)" class="w-full p-4 rounded-[20px] bg-[#f9fafb] border border-[#e5e8eb] hover:border-[#3182f6] hover:bg-[#f0f7ff] transition-all flex items-center justify-between text-left group">
+                        <div class="flex items-center gap-3.5">
+                            <span class="text-3xl p-2 bg-white rounded-2xl shadow-sm">📖</span>
+                            <div>
+                                <div class="font-bold text-gray-900 text-base group-hover:text-[#3182f6] transition-colors">동네 설화</div>
+                                <div class="text-xs text-gray-400 mt-0.5">옥귀도, 생금집 이야기</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-300 group-hover:text-[#3182f6] transition-colors font-bold text-lg">➔</span>
+                    </button>
+
+                    <button onclick="selectCategory(1)" class="w-full p-4 rounded-[20px] bg-[#f9fafb] border border-[#e5e8eb] hover:border-[#3182f6] hover:bg-[#f0f7ff] transition-all flex items-center justify-between text-left group">
+                        <div class="flex items-center gap-3.5">
+                            <span class="text-3xl p-2 bg-white rounded-2xl shadow-sm">📍</span>
+                            <div>
+                                <div class="font-bold text-gray-900 text-base group-hover:text-[#3182f6] transition-colors">지명 유래</div>
+                                <div class="text-xs text-gray-400 mt-0.5">오이도, 정왕산의 비밀</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-300 group-hover:text-[#3182f6] transition-colors font-bold text-lg">➔</span>
+                    </button>
+
+                    <button onclick="selectCategory(2)" class="w-full p-4 rounded-[20px] bg-[#f9fafb] border border-[#e5e8eb] hover:border-[#3182f6] hover:bg-[#f0f7ff] transition-all flex items-center justify-between text-left group">
+                        <div class="flex items-center gap-3.5">
+                            <span class="text-3xl p-2 bg-white rounded-2xl shadow-sm">👤</span>
+                            <div>
+                                <div class="font-bold text-gray-900 text-base group-hover:text-[#3182f6] transition-colors">역사 인물</div>
+                                <div class="text-xs text-gray-400 mt-0.5">제정구, 최긍렬 선생님</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-300 group-hover:text-[#3182f6] transition-colors font-bold text-lg">➔</span>
+                    </button>
+
+                    <button onclick="selectCategory(3)" class="w-full p-4 rounded-[20px] bg-[#f9fafb] border border-[#e5e8eb] hover:border-[#3182f6] hover:bg-[#f0f7ff] transition-all flex items-center justify-between text-left group">
+                        <div class="flex items-center gap-3.5">
+                            <span class="text-3xl p-2 bg-white rounded-2xl shadow-sm">🏛️</span>
+                            <div>
+                                <div class="font-bold text-gray-900 text-base group-hover:text-[#3182f6] transition-colors">문화유산</div>
+                                <div class="text-xs text-gray-400 mt-0.5">진덕사 의궤, 영응대군 묘</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-300 group-hover:text-[#3182f6] transition-colors font-bold text-lg">➔</span>
+                    </button>
+                </div>
             </div>
-            <span class="step-indicator" id="step-indicator">1 / 2</span>
+
+            <div class="text-center text-xs text-gray-400">
+                시흥시 자원봉사 역사 스탬프 챌린지
+            </div>
         </div>
 
-        <!-- 문제 진행 화면 -->
-        <div class="card-body" id="quiz-screen">
-            <div id="question-category" class="question-category">📖 설화 문제</div>
-            <div id="question-text" class="question-text">문제를 불러오는 중...</div>
-            <div class="options-list" id="options-list"></div>
+        <!-- 2. 퀴즈 진행 화면 -->
+        <div id="quiz-screen" class="hidden flex-col h-full justify-between">
+            <!-- 상단 상태바 -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <button onclick="goToCategoryScreen()" class="text-xs font-semibold text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                        ◀ 주제 변경
+                    </button>
+                    <span id="step-indicator" class="text-xs font-bold text-[#3182f6] bg-[#f2f4f6] px-2.5 py-1 rounded-full">1 / 2</span>
+                </div>
+
+                <div id="question-category" class="text-xs font-bold text-gray-400 mb-1">📖 동네 설화</div>
+                <h2 id="question-text" class="text-lg font-bold text-gray-900 leading-snug mb-5">문제를 불러오는 중...</h2>
+
+                <!-- 보기 목록 -->
+                <div id="options-list" class="flex flex-col gap-2.5">
+                    <!-- Dynamic Buttons -->
+                </div>
+            </div>
         </div>
 
-        <!-- 최종 결과 화면 -->
-        <div class="final-screen" id="final-screen">
-            <div class="final-badge" id="final-badge">🏆</div>
-            <div class="final-title" id="final-title">퀴즈 완료!</div>
-            <div class="final-score" id="final-score">총 2문제 중 2개 정답</div>
-            <div class="final-desc" id="final-desc">시흥의 역사를 완벽하게 알고 계시네요! 멋집니다 👍</div>
+        <!-- 3. 최종 결과 화면 -->
+        <div id="final-screen" class="hidden flex-col items-center justify-between h-full text-center py-4">
+            <div class="flex flex-col items-center my-auto w-full">
+                <div id="final-badge" class="text-6xl mb-4">🏆</div>
+                <h2 id="final-title" class="text-2xl font-extrabold text-gray-900 mb-2">퀴즈 완료!</h2>
+                <div id="final-score" class="text-lg font-bold text-[#3182f6] mb-6">총 2문제 중 2개 정답</div>
+                <div id="final-desc" class="text-sm text-gray-600 leading-relaxed bg-[#f9fafb] p-5 rounded-[20px] w-full border border-gray-100">
+                    시흥의 역사를 완벽하게 알고 계시네요!
+                </div>
+            </div>
+
+            <button onclick="goToCategoryScreen()" class="w-full bg-[#3182f6] hover:bg-[#1b64da] active:scale-[0.98] text-white font-bold py-4 rounded-[16px] text-base transition-all shadow-md">
+                다른 주제 도전하기 🔄
+            </button>
         </div>
 
-        <!-- 오버레이 및 바텀시트 -->
-        <div id="overlay" class="overlay"></div>
+        <!-- 토스 스타일 바텀시트 & 오버레이 -->
+        <div id="overlay" class="overlay absolute inset-0 bg-black/40 z-10"></div>
 
-        <div id="bottom-sheet" class="bottom-sheet">
-            <div id="sheet-icon"></div>
-            <div id="sheet-title" class="sheet-title"></div>
-            <div id="sheet-desc" class="sheet-desc"></div>
-            <button class="next-btn" id="sheet-next-btn" onclick="handleNextStep()">다음 문제 ➔</button>
+        <div id="bottom-sheet" class="bottom-sheet absolute bottom-0 left-0 right-0 bg-white rounded-t-[28px] p-6 shadow-2xl z-20">
+            <div id="sheet-icon" class="text-4xl mb-2">⭕</div>
+            <h3 id="sheet-title" class="text-xl font-bold mb-2">정답입니다!</h3>
+            <p id="sheet-desc" class="text-sm text-gray-600 leading-relaxed mb-6">해설이 들어갑니다.</p>
+            <button id="sheet-next-btn" onclick="handleNextStep()" class="w-full bg-[#3182f6] hover:bg-[#1b64da] active:scale-[0.98] text-white font-bold py-4 rounded-[16px] text-base transition-all">
+                다음 문제 (2/2) ➔
+            </button>
         </div>
+
     </div>
 
     <script>
-        // 총 4가지 종류, 각 종류별로 2문제씩 총 8문제 구성
-        const allCategories = [
+        // 4가지 카테고리 데이터 (각 2문제씩)
+        const categoriesData = [
             {
                 name: "📖 동네 설화",
                 questions: [
@@ -391,38 +291,46 @@
             }
         ];
 
-        let currentStage = 0; // 0번 또는 1번 문제 (총 2문제)
+        let currentCategoryIdx = 0;
+        let currentStage = 0;
         let score = 0;
-        let activeCategoryName = "";
-        let selectedQuizList = []; // 선택된 1개 카테고리의 2문제
+        let activeQuestions = [];
 
-        function startQuizGame() {
-            currentStage = 0;
-            score = 0;
-
-            // 4가지 종류 중 무작위로 딱 1종류를 선택
-            const randomCategory = allCategories[Math.floor(Math.random() * allCategories.length)];
-            activeCategoryName = randomCategory.name;
+        function goToCategoryScreen() {
+            document.getElementById('bottom-sheet').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('flex');
+            document.getElementById('final-screen').classList.add('hidden');
+            document.getElementById('final-screen').classList.remove('flex');
             
-            // 선택된 종류의 2문제를 가져옴
-            selectedQuizList = randomCategory.questions;
-
-            // 화면 초기화
-            document.getElementById('final-screen').style.display = 'none';
-            document.getElementById('quiz-screen').style.display = 'flex';
-            document.getElementById('app-header').style.display = 'flex';
-
-            renderCurrentQuiz();
+            document.getElementById('category-screen').classList.remove('hidden');
+            document.getElementById('category-screen').classList.add('flex');
         }
 
-        function renderCurrentQuiz() {
+        function selectCategory(categoryIdx) {
+            currentCategoryIdx = categoryIdx;
+            currentStage = 0;
+            score = 0;
+            activeQuestions = categoriesData[categoryIdx].questions;
+
+            document.getElementById('category-screen').classList.add('hidden');
+            document.getElementById('category-screen').classList.remove('flex');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+
+            renderQuiz();
+        }
+
+        function renderQuiz() {
             document.getElementById('bottom-sheet').classList.remove('show');
             document.getElementById('overlay').classList.remove('show');
 
-            const quiz = selectedQuizList[currentStage];
+            const quiz = activeQuestions[currentStage];
+            const categoryName = categoriesData[currentCategoryIdx].name;
 
-            document.getElementById('step-indicator').innerText = (currentStage + 1) + " / 2";
-            document.getElementById('question-category').innerText = activeCategoryName + ` (${currentStage + 1}/2)`;
+            document.getElementById('step-indicator').innerText = `${currentStage + 1} / 2`;
+            document.getElementById('question-category').innerText = `${categoryName} (${currentStage + 1}/2)`;
             document.getElementById('question-text').innerText = quiz.q;
 
             const optionsList = document.getElementById('options-list');
@@ -430,7 +338,7 @@
 
             quiz.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
-                btn.className = 'option-btn';
+                btn.className = 'w-full p-4 rounded-[16px] bg-[#f9fafb] border border-[#e5e8eb] active:bg-[#e5e8eb] active:scale-[0.98] transition-all text-left text-sm font-medium text-gray-800 leading-snug';
                 btn.innerText = opt;
                 btn.onclick = () => checkAnswer(index);
                 optionsList.appendChild(btn);
@@ -438,7 +346,7 @@
         }
 
         function checkAnswer(selectedIndex) {
-            const quiz = selectedQuizList[currentStage];
+            const quiz = activeQuestions[currentStage];
             const sheet = document.getElementById('bottom-sheet');
             const overlay = document.getElementById('overlay');
             const sheetIcon = document.getElementById('sheet-icon');
@@ -448,14 +356,14 @@
 
             if (selectedIndex === quiz.answer) {
                 score++;
-                sheetIcon.className = 'icon-correct';
+                sheetIcon.className = 'text-4xl mb-2 icon-correct';
                 sheetIcon.innerHTML = '⭕';
-                sheetTitle.className = 'sheet-title correct-color';
+                sheetTitle.className = 'text-xl font-bold mb-2 text-[#2480f6]';
                 sheetTitle.innerText = '정답입니다!';
             } else {
-                sheetIcon.className = 'icon-wrong';
+                sheetIcon.className = 'text-4xl mb-2 icon-wrong';
                 sheetIcon.innerHTML = '❌';
-                sheetTitle.className = 'sheet-title wrong-color';
+                sheetTitle.className = 'text-xl font-bold mb-2 text-[#f04452]';
                 sheetTitle.innerText = '아쉽네요, 틀렸습니다!';
             }
 
@@ -473,8 +381,8 @@
 
         function handleNextStep() {
             currentStage++;
-            if (currentStage < selectedQuizList.length) {
-                renderCurrentQuiz();
+            if (currentStage < activeQuestions.length) {
+                renderQuiz();
             } else {
                 showFinalResult();
             }
@@ -484,36 +392,39 @@
             document.getElementById('bottom-sheet').classList.remove('show');
             document.getElementById('overlay').classList.remove('show');
 
-            document.getElementById('quiz-screen').style.display = 'none';
-            document.getElementById('app-header').style.display = 'none';
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('flex');
 
             const finalScreen = document.getElementById('final-screen');
-            finalScreen.style.display = 'flex';
+            finalScreen.classList.remove('hidden');
+            finalScreen.classList.add('flex');
 
             const badge = document.getElementById('final-badge');
             const title = document.getElementById('final-title');
             const scoreEl = document.getElementById('final-score');
             const desc = document.getElementById('final-desc');
+            const categoryName = categoriesData[currentCategoryIdx].name;
 
             scoreEl.innerText = `총 2문제 중 ${score}개 정답!`;
 
             if (score === 2) {
                 badge.innerText = '🎉';
-                title.innerText = `완벽해요! [${activeCategoryName}] 마스터!`;
-                desc.innerText = `선택된 ${activeCategoryName} 부문 2문제를 모두 맞히셨습니다. 대단해요! 👏`;
+                title.innerText = `완벽해요! [${categoryName}] 마스터!`;
+                desc.innerText = `${categoryName} 부문 2문제를 모두 맞히셨습니다. 시흥 역사를 아주 잘 알고 계시네요! 👏`;
             } else if (score === 1) {
                 badge.innerText = '👍';
                 title.innerText = '훌륭해요! 1문제 정답!';
-                desc.innerText = `선택된 ${activeCategoryName} 부문에서 1문제를 맞히셨네요. 멋지게 알아가셨길 바랍니다 😊`;
+                desc.innerText = `${categoryName} 부문에서 1문제를 맞히셨군요! 시흥의 역사를 알아가는 좋은 시간이 되었길 바랍니다 😊`;
             } else {
                 badge.innerText = '💡';
                 title.innerText = '새로운 역사 지식 습득!';
-                desc.innerText = `오늘 ${activeCategoryName}에 대해 새로운 옛 이야기를 알게 되었네요! 수고하셨습니다 👏`;
+                desc.innerText = `오늘 ${categoryName}에 대해 새로운 유익한 이야기를 알게 되었네요! 참여해 주셔서 감사합니다 👏`;
             }
         }
 
+        // 초기 카테고리 선택 화면 출력
         window.onload = function() {
-            startQuizGame();
+            goToCategoryScreen();
         };
     </script>
 </body>
